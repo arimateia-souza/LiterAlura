@@ -32,4 +32,11 @@ public class Autor {
         this.anoFalecimento = autorDto.anoFalecimento();
         this.anoNascimento = autorDto.anoNascimento();
     }
+
+    @Override
+    public String toString() {
+        return   "Nome:" + nome +
+                ",Ano Nascimento=" + anoNascimento +
+                ",AnoFalecimento=" + anoFalecimento;
+    }
 }

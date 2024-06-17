@@ -5,9 +5,13 @@ import com.alura.literalura.dto.ResultadoApiDto;
 import com.alura.literalura.model.Autor;
 import com.alura.literalura.model.Livro;
 import com.alura.literalura.repository.LivroRepository;
+import com.alura.literalura.service.AutorService;
 import com.alura.literalura.service.ConsumoApi;
 import com.alura.literalura.service.ConverteDados;
+import com.alura.literalura.service.LivroService;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
@@ -15,10 +19,12 @@ public class Principal {
     private ConsumoApi consumo = new ConsumoApi();
     private ConverteDados conversor = new ConverteDados();
     private final String  ENDERECO = "https://gutendex.com/books/?search=";
-    private LivroRepository livroRepository;
+    private LivroService livroService;
+    private AutorService autorService;
 
-    public Principal(LivroRepository livroRepository) {
-        this.livroRepository = livroRepository;
+    public Principal(LivroService livroService, AutorService autorService) {
+        this.livroService = livroService;
+        this.autorService = autorService;
     }
 
     public void exibeMenu() {
@@ -26,7 +32,11 @@ public class Principal {
         while (menu !=8){
             System.out.println("""
                     -------Menu-------
-                    1 - Buscar um Livro""");
+                    1 - Busca de livro por título
+                    2 - Listagem de todos os livros
+                    3 - Lista de autores
+                    4 - Listar autores vivos em determinado ano
+                    """);
             System.out.print("Escolha uma opção: ");
             menu = teclado.nextInt();
             teclado.nextLine();
@@ -36,6 +46,12 @@ public class Principal {
                     break;
                 }case 2:{
                     listarLivros();
+                    break;
+                }case 3:{
+                    listarAutores();
+                    break;
+                }case 4:{
+                    listarAutoresVivosPorAno();
                     break;
                 }
                 default:
@@ -47,23 +63,53 @@ public class Principal {
 
     }
 
+    private void listarAutoresVivosPorAno() {
+    }
+
+    private void listarAutores() {
+        System.out.println("------Autores------");
+        List<Autor> autors = autorService.listarAutores();
+        autors.forEach(a -> System.out.println(
+                "Nome do Autor: "+ a.getNome() +
+                "\nAno de nascimento: " + a.getAnoNascimento() +
+                "\nAno de falecimento: " + a.getAnoFalecimento() +
+                "\n*****************"));
+
+    }
+
     private void listarLivros() {
+        System.out.println("------Livros------");
+        List<Livro> livros = livroService.listarLivros();
+        livros.forEach(l -> System.out.println("Titulo: "+ l.getTitulo() +
+                "\nIdiomas:" + l.getIdiomas() +
+                "\nTotal de downloads: " + l.getTotalDownloads() +
+                "\nNome do Autor: " + l.getAutor().getNome() +
+                "\n*****************"));
     }
 
     private void buscarLivro() {
         System.out.print("Busca de livro por titulo: ");
         var nomeLivro = teclado.nextLine();
-        var a = ENDERECO + nomeLivro.replace(" ", "+");
-        var json = consumo.obterDados(a);
+        var json = consumo.obterDados(ENDERECO + nomeLivro.replace(" ", "+"));
         ResultadoApiDto dados = conversor.obterDados(json, ResultadoApiDto.class);
+
+
         if (dados.livros() != null && !dados.livros().isEmpty()) {
             LivroDto livroBuscado = dados.livros().get(0);
             Livro livro = new Livro(livroBuscado);
-            Autor autor = new Autor(livroBuscado.autores().get(0));
-            System.out.println(livro);
-
-            livroRepository.save(livro);
-        } else {
+            if (livroService.validarLivro(livro.getTitulo()).isPresent()){
+                System.out.println("Este livro já está cadastrado no banco, tente listar os livros.");
+            }else {
+                System.out.println("Livro encontrado!");
+                System.out.println("-------Livro-------");
+                System.out.println("Titulo: " + livro.getTitulo());
+                System.out.println("Autor: " + livro.getAutor().getNome());
+                System.out.println("Idioma: " + livro.getIdiomas());
+                System.out.println("Total de downloads: " + livro.getTotalDownloads());
+                livroService.salvarLivro(livro);
+                System.out.println("Livro salvo no banco");
+            }
+        }else {
             System.out.println("Nenhum livro encontrado.");
         }
 

@@ -6,10 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 @Entity
 @Table(name = "livros")
 @AllArgsConstructor
@@ -19,6 +15,7 @@ public class Livro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String titulo;
     @ManyToOne(cascade=CascadeType.PERSIST)
     private Autor autor;
@@ -32,5 +29,13 @@ public class Livro {
         this.autor = new Autor(livroBuscado.autores().get(0));
         this.totalDownloads = livroBuscado.totalDownloads();
 
+    }
+
+    @Override
+    public String toString() {
+        return  "Titulo=" + titulo  +
+                ", Autor=" + autor +
+                ", Idiomas=" + idiomas +
+                ", totalDownloads=" + totalDownloads;
     }
 }
