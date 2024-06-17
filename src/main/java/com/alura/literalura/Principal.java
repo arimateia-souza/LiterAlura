@@ -4,24 +4,21 @@ import com.alura.literalura.dto.LivroDto;
 import com.alura.literalura.dto.ResultadoApiDto;
 import com.alura.literalura.model.Autor;
 import com.alura.literalura.model.Livro;
-import com.alura.literalura.repository.LivroRepository;
 import com.alura.literalura.service.AutorService;
 import com.alura.literalura.service.ConsumoApi;
 import com.alura.literalura.service.ConverteDados;
 import com.alura.literalura.service.LivroService;
 
-import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
-    private ConsumoApi consumo = new ConsumoApi();
-    private ConverteDados conversor = new ConverteDados();
-    private final String  ENDERECO = "https://gutendex.com/books/?search=";
-    private LivroService livroService;
-    private AutorService autorService;
+    private final ConsumoApi consumo = new ConsumoApi();
+    private final ConverteDados conversor = new ConverteDados();
+    private final LivroService livroService;
+    private final AutorService autorService;
 
     public Principal(LivroService livroService, AutorService autorService) {
         this.livroService = livroService;
@@ -30,13 +27,16 @@ public class Principal {
 
     public void exibeMenu() {
         int menu = -1;
-        while (menu !=8){
+        while (menu !=0){
             System.out.println("""
                     -------Menu-------
                     1 - Busca de livro por título
                     2 - Listagem de todos os livros
                     3 - Lista de autores
                     4 - Listar autores vivos em determinado ano
+                    5 - Exibir a quantidade de livros em um determinado idioma
+                    6 - Buscar autor por nome
+                    0 - Sair
                     """);
             System.out.print("Escolha uma opção: ");
             menu = teclado.nextInt();
@@ -52,23 +52,57 @@ public class Principal {
                     listarAutores();
                     break;
                 }case 4:{
-                    listarAutoresVivosPorAno();
+                    listarAutoresVivosApartirAno();
+                    break;
+                }case 5:{
+                    listarLivrosPorIdioma();
+                    break;
+                }case 6:{
+                    buscarAutorPorNome();
                     break;
                 }
                 default:
                     System.out.println("Opção invalida.");
             }
         }
-
-
-
     }
 
-    private void listarAutoresVivosPorAno() {
+    private void buscarAutorPorNome() {
+        System.out.println("Digite o nome do autor que deseja buscar: ");
+        var autorNome = teclado.nextLine();
+        List<Autor> autorsEncontrado = autorService.buscarAutorPorNome(autorNome);
+        autorsEncontrado.forEach(autor -> System.out.println(
+                "Autor(es) encontrado(s):\n" +
+                autor.getNome()));
+    }
+
+    private void listarLivrosPorIdioma() {
+        System.out.println("""
+                pt - portugues
+                en - ingles
+                es - espanhol
+                fr - frances
+                Escolha o idioma para buscar:
+                """);
+        var idioma = teclado.nextLine();
+        List<Livro> livrosEcontrados = livroService.listarLivrosPorIdioma(idioma);
+        if (!livrosEcontrados.isEmpty()){
+            livrosEcontrados.forEach(livro -> System.out.println("Titulo: "+ livro.getTitulo() +
+                    "\nIdiomas:" + livro.getIdiomas() +
+                    "\nTotal de downloads: " + livro.getTotalDownloads() +
+                    "\nNome do Autor: " + livro.getAutor().getNome() +
+                    "\n*****************"));
+
+        }else{
+            System.out.println("Nenhum livro com este idioma encontrado.");
+        }
+    }
+
+    private void listarAutoresVivosApartirAno() {
         System.out.print("Listar autores vivos a partir de que ano?");
         var ano = teclado.nextLong();
         teclado.nextLine();
-        List<Autor> autoresEncontrados =autorService.listarAutoresVivosPorAno(ano);
+        List<Autor> autoresEncontrados =autorService.listarAutoresVivosApartirAno(ano);
         if (!autoresEncontrados.isEmpty()){
             autoresEncontrados.forEach(autor -> System.out.println("Nome do autor: " + autor.getNome() +
                     "\nAno de Nascimento do autor: " + autor.getAnoNascimento() +
@@ -101,11 +135,13 @@ public class Principal {
                 "\nTotal de downloads: " + l.getTotalDownloads() +
                 "\nNome do Autor: " + l.getAutor().getNome() +
                 "\n*****************"));
+
     }
 
     private void buscarLivro() {
         System.out.print("Busca de livro por titulo: ");
         var nomeLivro = teclado.nextLine();
+        String ENDERECO = "https://gutendex.com/books/?search=";
         var json = consumo.obterDados(ENDERECO + nomeLivro.replace(" ", "+"));
         ResultadoApiDto dados = conversor.obterDados(json, ResultadoApiDto.class);
 
@@ -128,6 +164,8 @@ public class Principal {
         }else {
             System.out.println("Nenhum livro encontrado.");
         }
+        teclado.close();
 
     }
+
 }
