@@ -10,6 +10,7 @@ import com.alura.literalura.service.ConsumoApi;
 import com.alura.literalura.service.ConverteDados;
 import com.alura.literalura.service.LivroService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -64,18 +65,33 @@ public class Principal {
     }
 
     private void listarAutoresVivosPorAno() {
+        System.out.print("Listar autores vivos a partir de que ano?");
+        var ano = teclado.nextLong();
+        teclado.nextLine();
+        List<Autor> autoresEncontrados =autorService.listarAutoresVivosPorAno(ano);
+        if (!autoresEncontrados.isEmpty()){
+            autoresEncontrados.forEach(autor -> System.out.println("Nome do autor: " + autor.getNome() +
+                    "\nAno de Nascimento do autor: " + autor.getAnoNascimento() +
+                    "\nAno de Falecimento do autor: " + autor.getAnoFalecimento()));
+        }else {
+            System.out.println("Nenhum autor com  ano de falecimento " + ano + "encontrado");
+        }
     }
 
     private void listarAutores() {
         System.out.println("------Autores------");
-        List<Autor> autors = autorService.listarAutores();
-        autors.forEach(a -> System.out.println(
-                "Nome do Autor: "+ a.getNome() +
-                "\nAno de nascimento: " + a.getAnoNascimento() +
-                "\nAno de falecimento: " + a.getAnoFalecimento() +
-                "\n*****************"));
-
+        List<Autor> autores = autorService.listarAutores();
+        autores.forEach(autor -> {
+            System.out.println(
+                    "Nome do Autor: " + autor.getNome() +
+                            "\nAno de nascimento: " + autor.getAnoNascimento() +
+                            "\nAno de falecimento: " + autor.getAnoFalecimento()
+            );
+            autor.getLivros().forEach(livro -> System.out.println("Titulo: [" + livro.getTitulo() + "]"));
+            System.out.println("*****************");
+        });
     }
+
 
     private void listarLivros() {
         System.out.println("------Livros------");
