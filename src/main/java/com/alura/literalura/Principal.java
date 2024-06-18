@@ -164,8 +164,7 @@ public class Principal {
         }else {
             System.out.println("Nenhum livro encontrado.");
         }
-        teclado.close();
+
 
     }
-
 }
