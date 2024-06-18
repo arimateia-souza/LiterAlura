@@ -24,10 +24,6 @@ Desafio de projeto que faz o consumo da API [Gutendex](https://gutendex.com/) a 
 - Exibir a quantidade de livros em um determinado idioma
 - Buscar autor por nome
 
-## Imagens do projeto 🖼️
-
-![Captura de tela 2024-06-17 223958.png](..%2F..%2F..%2FImagens%2FCapturas%20de%20tela%2FCaptura%20de%20tela%202024-06-17%20223958.png)
-
 ## Ferramentas 🛠️
 
     - SpringBoot
